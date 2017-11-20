@@ -16,7 +16,7 @@ func (c *Client) RemoveSubscription(listID string, email string, mergeFields map
 	// Make request
 	params := map[string]interface{}{
 		"email_address": email,
-		"status":        status.Subscribed,
+		"status":        status.Unsubscribed,
 		"merge_fields":  mergeFields,
 	}
 	resp, err := c.do(
