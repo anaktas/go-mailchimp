@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 
 	"github.com/RichardKnop/go-mailchimp/status"
 )
@@ -19,6 +20,8 @@ func (c *Client) RemoveSubscription(listID string, email string, mergeFields map
 		"status":        status.Unsubscribed,
 		"merge_fields":  mergeFields,
 	}
+	log.Print("Params: ")
+	log.Println(params)
 	resp, err := c.do(
 		"DELETE",
 		fmt.Sprintf("/lists/%s/members/%s", listID, emailMD5),
@@ -34,12 +37,14 @@ func (c *Client) RemoveSubscription(listID string, email string, mergeFields map
 	if err != nil {
 		return nil, err
 	}
-
+	log.Print("Response body: ")
+	log.Println(resp.Body)
 	// Allow any success status (2xx)
 	if resp.StatusCode/100 == 2 {
 		// Unmarshal response into MemberResponse struct
 		memberResponse := new(MemberResponse)
 		if err := json.Unmarshal(data, memberResponse); err != nil {
+			log.Println("Unmarshal error: " + err.Error())
 			return nil, err
 		}
 		return memberResponse, nil
