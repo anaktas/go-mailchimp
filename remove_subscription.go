@@ -2,7 +2,6 @@ package mailchimp
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,7 +10,7 @@ import (
 )
 
 // UpdateSubscription ...
-func (c *Client) RemoveSubscription(listID string, email string, mergeFields map[string]interface{}) (*MemberResponse, error) {
+func (c *Client) RemoveSubscription(listID string, email string, mergeFields map[string]interface{}) error {
 	// Hash email
 	emailMD5 := fmt.Sprintf("%x", md5.Sum([]byte(email)))
 	// Make request
@@ -28,32 +27,26 @@ func (c *Client) RemoveSubscription(listID string, email string, mergeFields map
 		&params,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	log.Print("Response body: ")
 	log.Println(resp.Body)
 	// Allow any success status (2xx)
 	if resp.StatusCode/100 == 2 {
-		// Unmarshal response into MemberResponse struct
-		memberResponse := new(MemberResponse)
-		if err := json.Unmarshal(data, memberResponse); err != nil {
-			log.Println("Unmarshal error: " + err.Error())
-			return nil, err
-		}
-		return memberResponse, nil
+		return nil
 	}
 
 	// Request failed
 	errorResponse, err := extractError(data)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return nil, errorResponse
+	return errorResponse
 }
